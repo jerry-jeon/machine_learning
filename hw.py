@@ -5,7 +5,7 @@ import numpy as np
 #consider expand abstract attribute size, class size
 ATTRIBUTE_SIZE = 13
 CLS_SIZE = 2
-
+logging = False
 
 class Machine:
     def is_valid(self, data):
@@ -22,18 +22,13 @@ class Machine:
 
         self.discriminant = self.makeDiscriminant(cov_mat, mean, prior)
 
-        self.roc_discriminants = []
-        roc_priors = [0.0001, 0.02, 0.3, 0.8, 0.99];
-        for roc_prior in roc_priors:
-            self.roc_discriminants.append(self.makeDiscriminant(cov_mat, mean, [roc_prior, 1 - roc_prior]))
-
-
     def fileToData(self, file):
         training_data = []
         cls_size = [0] * CLS_SIZE
         data_lines = file.readlines()
         sum = np.full((CLS_SIZE, ATTRIBUTE_SIZE), 0.0)
         trans = [np.full((ATTRIBUTE_SIZE, ATTRIBUTE_SIZE), 0.0)] * CLS_SIZE
+
         for event in data_lines:
             data_line = event.split()
             if self.is_valid(data_line):
@@ -71,45 +66,58 @@ class Machine:
             w_1 = -0.5 * cov_mat[cls].I
             w_2 = cov_mat[cls].I * mean[cls]
             w_3 = -0.5 * mean[cls].T * cov_mat[cls].I * mean[cls] - (0.5 * log(np.linalg.det(cov_mat[cls]))) + log(prior[cls])
+
             result = np.mat(x) * w_1 * np.mat(x).T + w_2.T * np.mat(x).T + w_3
 
             return result[0]
 
         return g
 
-    def predict(self, data, discriminant):
-        results = []
-        for i in range(CLS_SIZE):
-            results.append(discriminant(data, i))
+    def predictFile(self, file):
+        data_lines = file.readlines()
+        original = self.predictDataLines(data_lines)
+        original.print()
+        original.printRocPoint()
 
-        return results.index(max(results))
-    
-    def predictDataLines(self, data_lines, discriminant):
+        print()
+        print("Give threshold for draw roc curve....")
+        print()
+
+        for i in range(200):
+            threshold = -10 + (i / 10)
+            print("threshold : " + str(threshold))
+            result = self.predictDataLines(data_lines, threshold)
+            if result.is_EER():
+                EER = result
+            result.printRocPoint()
+            print()
+
+        try:
+            print("Equal error rate")
+            EER.printRocPoint()
+        except:
+            print("Program can't find EER")
+
+
+    def predictDataLines(self, data_lines, threshold = 0):
         predictResult = PredictResult()
         for event in data_lines:
             data_line = event.split()
             if self.is_valid(data_line):
                 actual_cls = int(data_line.pop())
-                predict = self.predict(np.array([float(i) for i in data_line]), discriminant)
+                predict = self.predict(np.array([float(i) for i in data_line]), threshold)
                 predictResult.addData(predict, actual_cls)
 
         return predictResult
 
+    def predict(self, data, threshold):
+        positive = self.discriminant(data, 1)
+        negative = self.discriminant(data, 0)
 
-    def predictFile(self, file):
-        data_lines = file.readlines()
-        original = self.predictDataLines(data_lines, self.discriminant)
-        original.print()
-        original.printRocPoint()
-
-        print("Changing prior probabilities....")
-
-        for discriminant in self.roc_discriminants:
-            print()
-            result = self.predictDataLines(data_lines, discriminant)
-            result.printRocPoint()
-
-        return 
+        if positive + threshold > negative:
+            return 1
+        else:
+            return 0
 
 class PredictResult:
     def __init__(self):
@@ -117,15 +125,15 @@ class PredictResult:
 
     def addData(self, predict, actual_cls):
         if predict == actual_cls:
-            if predict == 0:
+            if predict == 1:
                 self.true_positive += 1
             else:
                 self.true_negative += 1
         else:
-            if predict == 0:
-                self.false_negative += 1
-            else:
+            if predict == 1:
                 self.false_positive += 1
+            else:
+                self.false_negative += 1
 
     def empiricalError(self):
         return self.false_negative + self.false_positive
@@ -142,6 +150,12 @@ class PredictResult:
         if self.true_positive + self.false_negative <= 0:
             return 0
         return self.true_positive / (self.true_positive + self.false_negative * 1.0)
+
+    def is_EER(self):
+        if 0.99 < self.tp_rate() + self.fp_rate() < 1.01:
+            return True
+        else:
+            return False
 
     def printRocPoint(self):
         print("--------------------------------------------")
@@ -162,7 +176,6 @@ class PredictResult:
         print("False positive : " + str(self.false_positive))
         print("False negative : " + str(self.false_negative))
 
-#roc curve - x cord is fp-rate y corod - tp rate
 
 machine = Machine()
 with open('data/trn.txt') as file:
