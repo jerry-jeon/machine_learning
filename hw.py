@@ -74,6 +74,7 @@ class Machine:
         return g
 
     def predictFile(self, file):
+        roc_file = open("roc.txt", "w")
         data_lines = file.readlines()
         original = self.predictDataLines(data_lines)
         original.print()
@@ -90,7 +91,10 @@ class Machine:
             if result.is_EER():
                 EER = result
             result.printRocPoint()
+            roc_file.write(str(result.fp_rate()) + "\t" + str(result.tp_rate()) + "\n")
             print()
+
+        roc_file.close()
 
         try:
             print("Equal error rate")
