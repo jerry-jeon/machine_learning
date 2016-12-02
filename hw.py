@@ -127,13 +127,72 @@ class BayesMachine(Machine):
         else:
             return 0
 
+def sigmoid(self, weight, values):
+    return 1.0 / (1 + exp(-(weight.T * values)))
+
+
+class Layer():
+
+    def __init__(self, node_number):
+        self.nodes = np.full((1, node_number), 0).T
+
+    def calculate(self):
+        if self.is_last:
+            return self.weight.T * self.values
+        else:
+            return sigmoid(self.weight, self.values)
+
+    def print(self):
+        print(-(weight.T * values))
+
+
+class Weight():
+
+    def __init__(self, row, col):
+        self.mat = self.beginningWeight(row, col)
+
+    def beginningWeight(self, row, col):
+        return np.random.uniform(-0.01, 0.01, (row, col)) 
+
+    def __getitem__(self, index):
+        return self.mat[index]
+
+
 class DeepLearningMachine(Machine):
 
     def __init__(self):
         self.epoch = 0
+        self.layers = []
+        self.weights = []
+
+    def makeLayers(self, nodes): #suppose nodes is int array
+        for i in range(len(nodes)):
+            node_number = nodes[i]
+            layer = Layer(node_number)
+            
+            if 'last_layer' in locals():
+                last_layer.top_layer = layer
+
+            if i < len(nodes) - 1:
+                next_node = nodes[i + 1]
+                weight = Weight(next_node_number, node_number)
+                weight.input_dimension = layer
+                layer.top_weight = weight
+                self.weights.append(weight)
+            else:
+                #TODO 이부분 맘에 안듬
+                layer.is_last = True
+
+            if 'last_weight' in locals():
+                layer.bottom_weight = last_weight
+                last_weight.output_class = layer
+
+            last_weight = weight
+            last_layer = layer
+
+            self.layers.append(layer)
+
     
-    def beginningWeight(self, row, col):
-        return np.random.uniform(-0.01, 0.01, (row, col)) 
 
     def converge(self, delta = 0):
         self.epoch += 1
@@ -141,51 +200,115 @@ class DeepLearningMachine(Machine):
             return True
         else:
             return False
-        '''
-                    if predelta == (delta  > 0):
-                        change += 1
-                    else:
-                        change = 0
-                        
-                    predelta = delta > 0
-                    '''
 
     def learnFile(self, file):
         training_data = self.fileToData(file)
-
-        hid_node = 2
-        w = self.beginningWeight(hid_node, ATTRIBUTE_SIZE)
-        v = self.beginningWeight(1, hid_node)
-        
         eta = 0.001 # learning rate
-        activation = self.linear;
-        h = np.full((1, hid_node), 0.0)
-        z = np.full((1, hid_node), 0.0)
+
+        self.makeLayers([13, 2, 2, 1])
+        
+        for layer in self.layers:
+            print(layer.node)
 
         while not self.converge():
             for data in training_data:
-                for h in range(hid_node):
-                    #print(-(np.mat(w[h]) * np.mat(data['data']).T))
+                layers[0].values = np.mat(data).T
+                for layer in layers[:-1]
                     try:
-                        z[:,h] = 1.0 / (1 + exp(-(np.mat(w[h]) * np.mat(data['data']).T)))
+                        layer.top_layer.values = layer.calculate()
                     except:
-                        print(-(np.mat(w[h]) * np.mat(data['data']).T))
+                        layer.print()
 
-                y = np.mat(v) * np.mat(z).T
+                        
+                for index, node in enumerate(layers):
+                    for h in range(node):
+                        try:
+                            print("z shape : " + str(z[index].shape))
+                            print("w shape : " + str(np.mat(w[index][h]).shape))
+                            print("x shape : " + str(np.mat(data['data']).shape))
+                            z[index][:,h] = 1.0 / (1 + exp(-(np.mat(w[index][h]) * lastz.T)))
+                            lastz = np.mat(z[index])
+                        except:
 
-                v_delta = eta * (data['cls'] - y) * np.mat(z)
 
-                for h in range(hid_node):
-                    w_delta = eta * ((data['cls'] - y) * v[:,h]) * z[:,h] * (1 - z[:,h]) * np.mat(data['data'].T)
+
+        '''
+        layers = [2, 2]
+        w = [None] * len(layers)
+        z = [None] * len(layers)
+        pre_node = ATTRIBUTE_SIZE
+        for index, node in enumerate(layers):
+            w[index] = self.beginningWeight(node, pre_node)
+            h = 0
+            print("W Index " + str(index) + " : " + str(np.mat(w[index]).shape))
+            z[index] = np.full((1, node), 0.0)
+            pre_node = node
+
+        v = self.beginningWeight(1, pre_node)
+
+        while not self.converge():
+            for data in training_data:
+                lastz = np.mat(data['data'])
+                for index, node in enumerate(layers):
+                    for h in range(node):
+                        try:
+                            print("z shape : " + str(z[index].shape))
+                            print("w shape : " + str(np.mat(w[index][h]).shape))
+                            print("x shape : " + str(np.mat(data['data']).shape))
+                            z[index][:,h] = 1.0 / (1 + exp(-(np.mat(w[index][h]) * lastz.T)))
+                            lastz = np.mat(z[index])
+                        except:
+                            print(-(np.mat(w[index][h]) * np.mat(data['data']).T))
+
+                print("3 : " + str(np.mat(z[-1]).shape))
+                y = np.mat(v) * np.mat(z[-1]).T
+
+                def err(pre_err, pre_weight, cur_z):
+                    sum = 0
+                    for i in range(len(pre_err)): # pre_node 개수
+                        print("PRE : " + str(pre_err.shape))
+                        print("PRE : " + str(pre_weight.shape))
+                        print("PRE : " + str(pre_err[i].shape))
+                        print("WEI : " + str(pre_weight[i].shape))
+                        sum += pre_err[i] * pre_weight[i]
+
+                    print("SUM : " + str(sum.shape))
+
+                    return sum * cur_z * (1 - cur_z)
+
+                def delta(err, vector):
+                    return eta * err * vector
+
+                v_err = (data['cls'] - y)
+                v_delta = eta * v_err * np.mat(z[-1])
+                print("Vdelta : " + str(v_delta.shape))
 
                 v += v_delta
-                for h in range(hid_node):
-                    w[:h,] += w_delta
+
+                pre_err = v_err;
+                pre_weight = v;
+                cur_z = z[1]
+
+
+                for index, node in reversed(list(enumerate(layers))):
+                    erru = err(pre_err, pre_weight, cur_z)
+                    delu = delta(erru, vector)
+
+                    for h in range(node):
+                        print(w[index].shape)
+                        print(deli.shape)
+                        w[index][h] += delu
+
+                    pre_err = erru;
+                    pre_weight = w[index]
+                    cur_z = z[index + 1]
+
 
         def g(x):
             return np.mat(v) * np.mat(w) * np.mat(x).T
 
         self.discriminant = g
+        '''
 
     def predict(self, data, threshold):
         result = self.discriminant(data)
