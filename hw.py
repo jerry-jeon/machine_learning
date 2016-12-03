@@ -143,7 +143,7 @@ class Layer():
             return sigmoid(self.weight, self.values)
 
     def print(self):
-        print(-(weight.T * values))
+        print(-(self.weight.T * self.values))
 
 
 class Weight():
@@ -165,6 +165,43 @@ class DeepLearningMachine(Machine):
         self.layers = []
         self.weights = []
 
+    def predict(self, data, threshold):
+        result = self.discriminant(data)
+
+        if result + threshold > 0:
+            return 1
+        else:
+            return 0
+
+    def linear(self, O, cls):
+        return O[cls]
+
+    def sigmoid(self, O, cls):
+        return 1.0 / (1.0 + exp(O[cls]))
+
+    def softmax(self, O, cls):
+        denominator = 0.0
+        for cls in range(CLS_SIZE):
+            denominator += exp(O[cls])
+        return exp(O[cls]) / denominator
+
+    def fileToData(self, file):
+        training_data = []
+        cls_size = [0] * CLS_SIZE
+        data_lines = file.readlines()
+
+        for event in data_lines:
+            data_line = event.split()
+            if self.is_valid(data_line):
+                data = {
+                    'cls': int(data_line.pop()),
+                    'data': np.array([float(i) for i in data_line]),
+                }
+                training_data.append(data)
+
+        return training_data
+
+'''
     def makeLayers(self, nodes): #suppose nodes is int array
         for i in range(len(nodes)):
             node_number = nodes[i]
@@ -232,7 +269,6 @@ class DeepLearningMachine(Machine):
 
 
 
-        '''
         layers = [2, 2]
         w = [None] * len(layers)
         z = [None] * len(layers)
@@ -310,41 +346,6 @@ class DeepLearningMachine(Machine):
         self.discriminant = g
         '''
 
-    def predict(self, data, threshold):
-        result = self.discriminant(data)
-
-        if result + threshold > 0:
-            return 1
-        else:
-            return 0
-
-    def linear(self, O, cls):
-        return O[cls]
-
-    def sigmoid(self, O, cls):
-        return 1.0 / (1.0 + exp(O[cls]))
-
-    def softmax(self, O, cls):
-        denominator = 0.0
-        for cls in range(CLS_SIZE):
-            denominator += exp(O[cls])
-        return exp(O[cls]) / denominator
-
-    def fileToData(self, file):
-        training_data = []
-        cls_size = [0] * CLS_SIZE
-        data_lines = file.readlines()
-
-        for event in data_lines:
-            data_line = event.split()
-            if self.is_valid(data_line):
-                data = {
-                    'cls': int(data_line.pop()),
-                    'data': np.array([float(i) for i in data_line]),
-                }
-                training_data.append(data)
-
-        return training_data
 
 class PredictResult:
     def __init__(self):
