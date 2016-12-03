@@ -181,10 +181,11 @@ class PredictResult:
         print("False negative : " + str(self.false_negative))
 
 
-machine = Machine()
-with open('data/trn.txt') as file:
-    machine.learnFile(file)
+if __name__ == "__main__":
+    machine = Machine()
+    with open('data/trn.txt') as file:
+        machine.learnFile(file)
 
-test_datas = []
-with open('data/tst.txt') as file:
-    machine.predictFile(file)
+    test_datas = []
+    with open('data/tst.txt') as file:
+        machine.predictFile(file)
