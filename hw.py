@@ -187,7 +187,6 @@ class DeepLearningMachine(Machine):
 
     def fileToData(self, file):
         training_data = []
-        cls_size = [0] * CLS_SIZE
         data_lines = file.readlines()
 
         for event in data_lines:
@@ -200,6 +199,13 @@ class DeepLearningMachine(Machine):
                 training_data.append(data)
 
         return training_data
+
+    def converge(self, delta = 0):
+        self.epoch += 1
+        if self.epoch >= 10:
+            return True
+        else:
+            return False
 
 '''
     def makeLayers(self, nodes): #suppose nodes is int array
@@ -231,12 +237,6 @@ class DeepLearningMachine(Machine):
 
 
 
-    def converge(self, delta = 0):
-        self.epoch += 1
-        if self.epoch > 10:
-            return True
-        else:
-            return False
 
     def learnFile(self, file):
         training_data = self.fileToData(file)
