@@ -57,7 +57,7 @@ class TestPercentrons(TestCase):
     def test_calculate_all(self):
         check = True
 
-        self.perceptrons.calculateAll()
+        self.perceptrons.calculate_all()
 
         for layer in self.perceptrons.layers[2:]:
             row, _ = layer.shape
@@ -74,7 +74,7 @@ class TestPercentrons(TestCase):
         assert check
 
     def test_err_shape(self):
-        self.perceptrons.calculateAll()
+        self.perceptrons.calculate_all()
 
         check = True
         for i in range(len(self.perceptrons.weights)):

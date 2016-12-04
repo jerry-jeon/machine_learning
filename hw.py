@@ -9,6 +9,7 @@ ATTRIBUTE_SIZE = 13
 CLS_SIZE = 2
 logging = False
 
+
 class Machine:
 
     def is_valid(self, data):
@@ -17,14 +18,14 @@ class Machine:
         else:
             return False
 
-    def predictFile(self, file, withRoc):
+    def predict_file(self, data_file, with_roc):
         roc_file = open("roc.txt", "w")
-        data_lines = file.readlines()
-        original = self.predictDataLines(data_lines)
+        data_lines = data_file.readlines()
+        original = self.predict_data_lines(data_lines)
         original.print()
-        original.printRocPoint()
+        original.print_roc_point()
 
-        if withRoc:
+        if with_roc:
             print()
             print("Give threshold for draw roc curve....")
             print()
@@ -32,10 +33,10 @@ class Machine:
             for i in range(200):
                 threshold = -10 + (i / 10)
                 print("threshold : " + str(threshold))
-                result = self.predictDataLines(data_lines, threshold)
-                if result.is_EER():
+                result = self.predict_data_lines(data_lines, threshold)
+                if result.is_eer():
                     EER = result
-                result.printRocPoint()
+                result.print_roc_point()
                 roc_file.write(str(result.fp_rate()) + "\t" + str(result.tp_rate()) + "\n")
                 print()
 
@@ -43,32 +44,33 @@ class Machine:
 
             try:
                 print("Equal error rate")
-                EER.printRocPoint()
+                EER.print_roc_point()
             except:
                 print("Program can't find EER")
 
-    def predictDataLines(self, data_lines, threshold = 0):
+    def predict_data_lines(self, data_lines, threshold = 0):
         predictResult = PredictResult()
         for event in data_lines:
             data_line = event.split()
             if self.is_valid(data_line):
                 actual_cls = int(data_line.pop())
                 predict = self.predict(np.array([float(i) for i in data_line]), threshold)
-                predictResult.addData(predict, actual_cls)
+                predictResult.add_data(predict, actual_cls)
 
         return predictResult
 
+
 class BayesMachine(Machine):
 
-    def learnFile(self, file):
-        training_data, sum, cls_size, trans = self.fileToData(file)
-        mean = self.calculateMean(sum, cls_size)
-        cov_mat = self.calculateCovarianceMatrix(mean, training_data, cls_size, trans)
+    def learn_file(self, file):
+        training_data, sum, cls_size, trans = self.file_to_data(file)
+        mean = self.calculate_mean(sum, cls_size)
+        cov_mat = self.calculate_covariance_matrix(mean, training_data, cls_size, trans)
         prior = [cls_size[cls] / (len(training_data) * 1.0) for cls in range(CLS_SIZE)]
 
-        self.discriminant = self.makeDiscriminant(cov_mat, mean, prior)
+        self.discriminant = self.make_discriminant(cov_mat, mean, prior)
 
-    def fileToData(self, file):
+    def file_to_data(self, file):
         training_data = []
         cls_size = [0] * CLS_SIZE
         data_lines = file.readlines()
@@ -88,8 +90,7 @@ class BayesMachine(Machine):
                 training_data.append(data)
         return training_data, sum, cls_size, trans
         
-
-    def calculateMean(self, sum, cls_size):
+    def calculate_mean(self, sum, cls_size):
         means = []
         for cls, cls_sum in enumerate(sum):
             mean = cls_sum / cls_size[cls]
@@ -97,7 +98,7 @@ class BayesMachine(Machine):
 
         return means
 
-    def calculateCovarianceMatrix(self, mean, training_data, cls_size, trans):
+    def calculate_covariance_matrix(self, mean, training_data, cls_size, trans):
         cov_mat = [np.full((ATTRIBUTE_SIZE, ATTRIBUTE_SIZE), 0.0)] * CLS_SIZE
         for data in training_data:
             cov_mat[data['cls']] = np.add(cov_mat[data['cls']], (np.mat(data['data']).T - mean[data['cls']]) * (np.mat(data['data']).T - mean[data['cls']]).T)
@@ -107,7 +108,7 @@ class BayesMachine(Machine):
         
         return cov_mat
 
-    def makeDiscriminant(self, cov_mat, mean, prior):
+    def make_discriminant(self, cov_mat, mean, prior):
         def g(x, cls):
             w_1 = -0.5 * cov_mat[cls].I
             w_2 = cov_mat[cls].I * mean[cls]
@@ -144,7 +145,7 @@ class Perceptrons():
             self.layers.append(np.mat(np.full((node_length, 1), 0.0)))
 
         for i in range(len(nodes) - 1):
-            self.weights.append(self.beginningWeight(nodes[i], nodes[i+1]))
+            self.weights.append(self.beginning_weight(nodes[i], nodes[i + 1]))
 
     def last_layer(self):
         return self.layers[len(self.layers) - 1]
@@ -156,7 +157,7 @@ class Perceptrons():
     def weight(self, index):
         return self.weights[index]
 
-    def beginningWeight(self, row, col):
+    def beginning_weight(self, row, col):
         return np.mat(np.random.uniform(-0.01, 0.01, (row, col)))
 
     def calculate(self, step):
@@ -165,7 +166,7 @@ class Perceptrons():
             results.append(sigmoid(self.weight(step)[:, cls], self.layer(step)))
         return np.mat(results).T
 
-    def calculateAll(self):
+    def calculate_all(self):
         for step in range(len(self.weights)):
             self.layers[step + 1] = self.calculate(step)
 
@@ -190,6 +191,7 @@ class Perceptrons():
 
         return np.mat(np.array(results)).T
 
+
 class DeepLearningMachine(Machine):
 
     def __init__(self):
@@ -205,9 +207,9 @@ class DeepLearningMachine(Machine):
         else:
             return 0
 
-    def fileToData(self, file):
+    def file_to_data(self, data_file):
         training_data = []
-        data_lines = file.readlines()
+        data_lines = data_file.readlines()
 
         for event in data_lines:
             data_line = event.split()
@@ -232,7 +234,7 @@ class PredictResult:
     def __init__(self):
         self.true_positive = self.true_negative = self.false_positive = self.false_negative = 0
 
-    def addData(self, predict, actual_cls):
+    def add_data(self, predict, actual_cls):
         if predict == actual_cls:
             if predict == 1:
                 self.true_positive += 1
@@ -244,7 +246,7 @@ class PredictResult:
             else:
                 self.false_negative += 1
 
-    def empiricalError(self):
+    def empirical_error(self):
         return self.false_negative + self.false_positive
 
     def size(self):
@@ -260,13 +262,13 @@ class PredictResult:
             return 0
         return self.true_positive / (self.true_positive + self.false_negative * 1.0)
 
-    def is_EER(self):
+    def is_eer(self):
         if 0.99 < self.tp_rate() + self.fp_rate() < 1.01:
             return True
         else:
             return False
 
-    def printRocPoint(self):
+    def print_roc_point(self):
         print("--------------------------------------------")
         print("FPR : " + str(self.fp_rate()))
         print("TPR : " + str(self.tp_rate()))
@@ -275,8 +277,8 @@ class PredictResult:
         print()
         print("Result")
         print("--------------------------------------------")
-        print("Empirical error : " + str(self.empiricalError()))
-        print("Empirical error : " + str(self.empiricalError() / (self.size() * 1.0)))
+        print("Empirical error : " + str(self.empirical_error()))
+        print("Empirical error : " + str(self.empirical_error() / (self.size() * 1.0)))
         print()
         print("Confusion Matrix")
         print("--------------------------------------------")
@@ -289,8 +291,8 @@ class PredictResult:
 if __name__ == "__main__":
     machine = DeepLearningMachine()
     with open('data/trn.txt') as file:
-        machine.learnFile(file)
+        machine.learn_file(file)
 
     test_datas = []
     with open('data/tst.txt') as file:
-        machine.predictFile(file, False)
+        machine.predict_file(file, False)

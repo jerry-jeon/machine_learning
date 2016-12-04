@@ -32,7 +32,7 @@ class TestDeepLearningMachine(TestCase):
 
     def test_fileToData(self):
         with open(TEST_FILE) as file:
-            training_data = self.machine.fileToData(file)
+            training_data = self.machine.file_to_data(file)
 
         cls_positive = sum(x['cls'] == 1 for x in training_data)
         cls_negative = sum(x['cls'] == 0 for x in training_data)
