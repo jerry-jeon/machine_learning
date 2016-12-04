@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 from hw import Perceptrons
+from hw import sigmoid
 import numpy as np
 
 
@@ -9,6 +10,11 @@ class TestPercentrons(TestCase):
     def setUp(self):
         self.sample_nodes = [13, 2, 2, 1]
         self.perceptrons = Perceptrons(self.sample_nodes)
+
+    def test_sigmoid_range_0_to_1(self):
+        fake_data = np.mat([5.332, 1.233, 8.66]).T
+        fake_weight = self.perceptrons.beginning_weight(3, 1)
+        assert 0 < sigmoid(fake_weight, fake_data) < 1
 
     def test_initialize_layer_number(self):
         assert len(self.perceptrons.layers) == len(self.sample_nodes)
