@@ -159,13 +159,10 @@ class Perceptrons():
         return np.mat(np.random.uniform(-0.01, 0.01, (row, col)))
 
     def calculate(self, step):
-        if step == len(self.layers) - 1: #linear
-            return np.mat([self.weight(step).T * self.layer(step)])
-        else:
-            results = []
-            for cls in range(len(self.layer(step + 1))):
-                results.append(sigmoid(self.weight(step)[:, cls], self.layer(step)))
-            return np.mat(results).T
+        results = []
+        for cls in range(len(self.layer(step + 1))):
+            results.append(sigmoid(self.weight(step)[:, cls], self.layer(step)))
+        return np.mat(results).T
 
     def calculateAll(self):
         for step in range(len(self.weights)):
@@ -177,7 +174,7 @@ class Perceptrons():
 
     def err(self, weight_index, real_class):
         if weight_index == len(self.weights) - 1:
-            return lambda i : real_class - self.last_layer().item(0, 0)
+            return lambda output_node: real_class - self.last_layer().item(0, 0)
         else:
             above_err = self.err(weight_index + 1, real_class)
             above_layer = self.layer(weight_index + 1)
@@ -187,7 +184,7 @@ class Perceptrons():
             for i in range(len(above_layer)):
                 err_sum += (above_err(i) * above_layer[i]).item(0, 0)
 
-            return lambda i: err_sum * self.layer(weight_index + 1)[i].item(0, 0) * (1 - self.layer(weight_index + 1)[i].item(0, 0))
+            return lambda output_node: err_sum * self.layer(weight_index + 1)[output_node].item(0, 0) * (1 - self.layer(weight_index + 1)[output_node].item(0, 0))
 
 class DeepLearningMachine(Machine):
 
