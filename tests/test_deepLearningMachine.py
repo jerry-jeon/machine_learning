@@ -17,13 +17,19 @@ class TestDeepLearningMachine(TestCase):
 
     def test_predict_positive_discriminant_class1(self):
         self.machine.discriminant = lambda data : 1
-
-        assert self.machine.predict(self.fake_data, 0) == 1
+        assert self.machine.predict(self.fake_data) == 1
+        self.machine.discriminant = lambda data : 0.7
+        assert self.machine.predict(self.fake_data) == 1
+        self.machine.discriminant = lambda data : 0.55
+        assert self.machine.predict(self.fake_data) == 1
 
     def test_predict_negative_discriminant_class0(self):
         self.machine.discriminant = lambda data : 0
-
-        assert self.machine.predict(self.fake_data, 0) == 0
+        assert self.machine.predict(self.fake_data) == 0
+        self.machine.discriminant = lambda data : 0.3
+        assert self.machine.predict(self.fake_data) == 0
+        self.machine.discriminant = lambda data : 0.4
+        assert self.machine.predict(self.fake_data) == 0
 
     def test_predict_negative_discriminant_with_bigpositivethreshold_class1(self):
         self.machine.discriminant = lambda data : 0
@@ -54,6 +60,4 @@ class TestDeepLearningMachine(TestCase):
             self.machine.converge()
 
         assert self.machine.converge()
-
-
 

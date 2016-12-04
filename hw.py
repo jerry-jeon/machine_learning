@@ -211,10 +211,10 @@ class DeepLearningMachine(Machine):
         self.layers = []
         self.weights = []
 
-    def predict(self, data, threshold):
+    def predict(self, data, threshold=0):
         result = self.discriminant(data)
 
-        if result + threshold > 0:
+        if result + threshold > 0.5:
             return 1
         else:
             return 0
