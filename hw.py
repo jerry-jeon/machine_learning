@@ -204,6 +204,7 @@ class Perceptrons():
         self.calculate_all()
         self.update_weight_all(real_class)
 
+
 class DeepLearningMachine(Machine):
 
     def __init__(self):
@@ -213,11 +214,27 @@ class DeepLearningMachine(Machine):
 
     def predict(self, data, threshold=0):
         result = self.discriminant(data)
+        print(result)
 
         if result + threshold > 0.5:
             return 1
         else:
             return 0
+
+    def learn_file(self, file):
+        training_data = self.file_to_data(file)
+        perceptrons = Perceptrons([13, 2, 1])
+        while self.converge():
+            print("EPOCH : " + str(self.epoch))
+            for data in training_data:
+                perceptrons.back_propogation(data)
+
+        def g(data):
+            perceptrons.layers[0] = np.mat(np.array(data)).T
+            perceptrons.calculate_all()
+            return perceptrons.last_layer().item(0, 0)
+
+        self.discriminant = g
 
     def file_to_data(self, data_file):
         training_data = []
@@ -236,10 +253,10 @@ class DeepLearningMachine(Machine):
 
     def converge(self, delta = 0):
         self.epoch += 1
-        if self.epoch >= 10:
-            return True
-        else:
+        if self.epoch >= 3:
             return False
+        else:
+            return True
 
 
 class PredictResult:
