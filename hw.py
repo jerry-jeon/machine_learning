@@ -184,13 +184,25 @@ class Perceptrons():
 
             return lambda output_node: err_sum * self.layer(weight_index + 1)[output_node].item(0, 0) * (1 - self.layer(weight_index + 1)[output_node].item(0, 0))
 
-    def generate_delta(self, step, real_class):
+    def delta(self, step, real_class):
         results = []
         for node in range(len(self.layer(step + 1))):
             results.append(self.learning_rate * self.err(step, real_class)(node) * self.layer(step))
 
         return np.mat(np.array(results)).T
 
+    def update_weight(self, step, real_class):
+        self.weights[step] += self.delta(step, real_class)
+
+    def update_weight_all(self, real_class):
+        for i in range(len(self.weights)):
+            self.update_weight(i, real_class)
+
+    def back_propogation(self, data):
+        real_class = data['cls']
+        self.layers[0] = np.mat(data['data']).T
+        self.calculate_all()
+        self.update_weight_all(real_class)
 
 class DeepLearningMachine(Machine):
 
