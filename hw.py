@@ -1,6 +1,7 @@
 from math import log, sqrt, exp
 from operator import add
 import numpy as np
+from functools import reduce
 import sys
 
 #consider expand abstract attribute size, class size
@@ -127,36 +128,66 @@ class BayesMachine(Machine):
         else:
             return 0
 
-def sigmoid(self, weight, values):
+
+def sigmoid(weight, values):
     return 1.0 / (1 + exp(-(weight.T * values)))
 
 
-class Layer():
+class Perceptrons():
 
-    def __init__(self, node_number):
-        self.nodes = np.full((1, node_number), 0).T
+    def __init__(self, nodes):
+        self.layers = []
+        self.weights = []
 
-    def calculate(self):
-        if self.is_last:
-            return self.weight.T * self.values
-        else:
-            return sigmoid(self.weight, self.values)
+        for node_length in nodes:
+            self.layers.append(np.mat(np.full((node_length, 1), 0.0)))
 
-    def print(self):
-        print(-(self.weight.T * self.values))
+        for i in range(len(nodes) - 1):
+            self.weights.append(self.beginningWeight(nodes[i], nodes[i+1]))
 
+    def last_layer(self):
+        return self.layers[len(self.layers) - 1]
 
-class Weight():
+#Consider remove these methods
+    def layer(self, index):
+        return self.layers[index]
 
-    def __init__(self, row, col):
-        self.mat = self.beginningWeight(row, col)
+    def weight(self, index):
+        return self.weights[index]
 
     def beginningWeight(self, row, col):
-        return np.random.uniform(-0.01, 0.01, (row, col))
+        return np.mat(np.random.uniform(-0.01, 0.01, (row, col)))
 
-    def __getitem__(self, index):
-        return self.mat[index]
+    def calculate(self, step):
+        if step == len(self.layers) - 1: #linear
+            return np.mat([self.weight(step).T * self.layer(step)])
+        else:
+            results = []
+            for cls in range(len(self.layer(step + 1))):
+                results.append(sigmoid(self.weight(step)[:, cls], self.layer(step)))
+            return np.mat(results).T
 
+    def calculateAll(self):
+        for step in range(len(self.weights)):
+            self.layers[step + 1] = self.calculate(step)
+
+    def generate_delta(self, step):
+        #TODO not completed
+        return np.mat(np.full(self.weight(step).shape, 0.0))
+
+    def err(self, weight_index, real_class):
+        if weight_index == len(self.weights) - 1:
+            return lambda i : real_class - self.last_layer().item(0, 0)
+        else:
+            above_err = self.err(weight_index + 1, real_class)
+            above_layer = self.layer(weight_index + 1)
+
+            #err_sum = reduce(lambda x, y: x + above_err(i) * y, above_layer, 0)
+            err_sum = 0.0
+            for i in range(len(above_layer)):
+                err_sum += (above_err(i) * above_layer[i]).item(0, 0)
+
+            return lambda i: err_sum * self.layer(weight_index + 1)[i].item(0, 0) * (1 - self.layer(weight_index + 1)[i].item(0, 0))
 
 class DeepLearningMachine(Machine):
 
@@ -206,145 +237,6 @@ class DeepLearningMachine(Machine):
             return True
         else:
             return False
-
-'''
-    def makeLayers(self, nodes): #suppose nodes is int array
-        for i in range(len(nodes)):
-            node_number = nodes[i]
-            layer = Layer(node_number)
-
-            if 'last_layer' in locals():
-                last_layer.top_layer = layer
-
-            if i < len(nodes) - 1:
-                next_node = nodes[i + 1]
-                weight = Weight(next_node_number, node_number)
-                weight.input_dimension = layer
-                layer.top_weight = weight
-                self.weights.append(weight)
-            else:
-                #TODO 이부분 맘에 안듬
-                layer.is_last = True
-
-            if 'last_weight' in locals():
-                layer.bottom_weight = last_weight
-                last_weight.output_class = layer
-
-            last_weight = weight
-            last_layer = layer
-
-            self.layers.append(layer)
-
-
-
-
-    def learnFile(self, file):
-        training_data = self.fileToData(file)
-        eta = 0.001 # learning rate
-
-        self.makeLayers([13, 2, 2, 1])
-
-        for layer in self.layers:
-            print(layer.node)
-
-        while not self.converge():
-            for data in training_data:
-                layers[0].values = np.mat(data).T
-                for layer in layers[:-1]
-                    try:
-                        layer.top_layer.values = layer.calculate()
-                    except:
-                        layer.print()
-
-
-                for index, node in enumerate(layers):
-                    for h in range(node):
-                        try:
-                            print("z shape : " + str(z[index].shape))
-                            print("w shape : " + str(np.mat(w[index][h]).shape))
-                            print("x shape : " + str(np.mat(data['data']).shape))
-                            z[index][:,h] = 1.0 / (1 + exp(-(np.mat(w[index][h]) * lastz.T)))
-                            lastz = np.mat(z[index])
-                        except:
-
-
-
-        layers = [2, 2]
-        w = [None] * len(layers)
-        z = [None] * len(layers)
-        pre_node = ATTRIBUTE_SIZE
-        for index, node in enumerate(layers):
-            w[index] = self.beginningWeight(node, pre_node)
-            h = 0
-            print("W Index " + str(index) + " : " + str(np.mat(w[index]).shape))
-            z[index] = np.full((1, node), 0.0)
-            pre_node = node
-
-        v = self.beginningWeight(1, pre_node)
-
-        while not self.converge():
-            for data in training_data:
-                lastz = np.mat(data['data'])
-                for index, node in enumerate(layers):
-                    for h in range(node):
-                        try:
-                            print("z shape : " + str(z[index].shape))
-                            print("w shape : " + str(np.mat(w[index][h]).shape))
-                            print("x shape : " + str(np.mat(data['data']).shape))
-                            z[index][:,h] = 1.0 / (1 + exp(-(np.mat(w[index][h]) * lastz.T)))
-                            lastz = np.mat(z[index])
-                        except:
-                            print(-(np.mat(w[index][h]) * np.mat(data['data']).T))
-
-                print("3 : " + str(np.mat(z[-1]).shape))
-                y = np.mat(v) * np.mat(z[-1]).T
-
-                def err(pre_err, pre_weight, cur_z):
-                    sum = 0
-                    for i in range(len(pre_err)): # pre_node 개수
-                        print("PRE : " + str(pre_err.shape))
-                        print("PRE : " + str(pre_weight.shape))
-                        print("PRE : " + str(pre_err[i].shape))
-                        print("WEI : " + str(pre_weight[i].shape))
-                        sum += pre_err[i] * pre_weight[i]
-
-                    print("SUM : " + str(sum.shape))
-
-                    return sum * cur_z * (1 - cur_z)
-
-                def delta(err, vector):
-                    return eta * err * vector
-
-                v_err = (data['cls'] - y)
-                v_delta = eta * v_err * np.mat(z[-1])
-                print("Vdelta : " + str(v_delta.shape))
-
-                v += v_delta
-
-                pre_err = v_err;
-                pre_weight = v;
-                cur_z = z[1]
-
-
-                for index, node in reversed(list(enumerate(layers))):
-                    erru = err(pre_err, pre_weight, cur_z)
-                    delu = delta(erru, vector)
-
-                    for h in range(node):
-                        print(w[index].shape)
-                        print(deli.shape)
-                        w[index][h] += delu
-
-                    pre_err = erru;
-                    pre_weight = w[index]
-                    cur_z = z[index + 1]
-
-
-        def g(x):
-            return np.mat(v) * np.mat(w) * np.mat(x).T
-
-        self.discriminant = g
-        '''
 
 
 class PredictResult:
