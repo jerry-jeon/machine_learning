@@ -205,18 +205,6 @@ class DeepLearningMachine(Machine):
         else:
             return 0
 
-    def linear(self, O, cls):
-        return O[cls]
-
-    def sigmoid(self, O, cls):
-        return 1.0 / (1.0 + exp(O[cls]))
-
-    def softmax(self, O, cls):
-        denominator = 0.0
-        for cls in range(CLS_SIZE):
-            denominator += exp(O[cls])
-        return exp(O[cls]) / denominator
-
     def fileToData(self, file):
         training_data = []
         data_lines = file.readlines()
