@@ -204,6 +204,17 @@ class Perceptrons():
         self.calculate_all()
         self.update_weight_all(real_class)
 
+    def info(self):
+        information = ""
+        information += "Layer depth : " + str(len(self.layers)) + "\n"
+        information += "Weight number : " + str(len(self.weights)) + "\n"
+        information += "Layers" + "\n"
+        information += "===========================" + "\n"
+        information += str(self.layers) + "\n"
+        information += "Weights" + "\n"
+        information += "===========================" + "\n"
+        information += str(self.weights) + "\n"
+        return information
 
 class DeepLearningMachine(Machine):
 
@@ -223,11 +234,13 @@ class DeepLearningMachine(Machine):
 
     def learn_file(self, file):
         training_data = self.file_to_data(file)
-        perceptrons = Perceptrons([13, 2, 1])
+        perceptrons = Perceptrons([13, 1])
+        print(perceptrons.info())
         while self.converge():
             print("EPOCH : " + str(self.epoch))
             for data in training_data:
                 perceptrons.back_propogation(data)
+        print(perceptrons.info())
 
         def g(data):
             perceptrons.layers[0] = np.mat(np.array(data)).T
