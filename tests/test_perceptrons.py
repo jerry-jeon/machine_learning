@@ -59,7 +59,6 @@ class TestPercentrons(TestCase):
 
         self.perceptrons.calculateAll()
 
-        print(len(self.perceptrons.layers))
         for layer in self.perceptrons.layers[2:]:
             row, _ = layer.shape
             for i in range(row):
@@ -70,7 +69,7 @@ class TestPercentrons(TestCase):
     def test_generate_delta_shape(self):
         check = True
         for step in range(len(self.perceptrons.weights)):
-            check &= (self.perceptrons.weight(step).shape == self.perceptrons.generate_delta(step).shape)
+            check &= (self.perceptrons.weight(step).shape == self.perceptrons.generate_delta(step, 0).shape)
 
         assert check
 

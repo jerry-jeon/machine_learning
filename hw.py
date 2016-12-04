@@ -136,6 +136,7 @@ def sigmoid(weight, values):
 class Perceptrons():
 
     def __init__(self, nodes):
+        self.learning_rate = 0.001
         self.layers = []
         self.weights = []
 
@@ -168,10 +169,6 @@ class Perceptrons():
         for step in range(len(self.weights)):
             self.layers[step + 1] = self.calculate(step)
 
-    def generate_delta(self, step):
-        #TODO not completed
-        return np.mat(np.full(self.weight(step).shape, 0.0))
-
     def err(self, weight_index, real_class):
         if weight_index == len(self.weights) - 1:
             return lambda output_node: real_class - self.last_layer().item(0, 0)
@@ -185,6 +182,13 @@ class Perceptrons():
                 err_sum += (above_err(i) * above_layer[i]).item(0, 0)
 
             return lambda output_node: err_sum * self.layer(weight_index + 1)[output_node].item(0, 0) * (1 - self.layer(weight_index + 1)[output_node].item(0, 0))
+
+    def generate_delta(self, step, real_class):
+        results = []
+        for node in range(len(self.layer(step + 1))):
+            results.append(self.learning_rate * self.err(step, real_class)(node) * self.layer(step))
+
+        return np.mat(np.array(results)).T
 
 class DeepLearningMachine(Machine):
 
