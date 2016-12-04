@@ -2,7 +2,11 @@ from unittest import TestCase
 
 from hw import Perceptrons
 from hw import sigmoid
+from hw import DeepLearningMachine
 import numpy as np
+import os
+
+TEST_FILE = os.path.join(os.path.dirname(__file__), 'test_trn.txt')
 
 
 class TestPercentrons(TestCase):
@@ -72,13 +76,6 @@ class TestPercentrons(TestCase):
 
         assert check
 
-    def test_generate_delta_shape(self):
-        check = True
-        for step in range(len(self.perceptrons.weights)):
-            check &= (self.perceptrons.weight(step).shape == self.perceptrons.generate_delta(step, 0).shape)
-
-        assert check
-
     def test_err_shape(self):
         self.perceptrons.calculate_all()
 
@@ -89,5 +86,10 @@ class TestPercentrons(TestCase):
 
         assert check
 
+    def test_delta_shape(self):
+        check = True
+        for step in range(len(self.perceptrons.weights)):
+            check &= (self.perceptrons.weight(step).shape == self.perceptrons.delta(step, 0).shape)
 
+        assert check
 
