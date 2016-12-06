@@ -30,6 +30,15 @@ class TestPercentrons(TestCase):
 
         assert check
 
+    def test_change_layer_augmented_layer_length_same_as_node_length_plus_one(self):
+        check = True
+        for index, node_length in enumerate(self.sample_nodes):
+            self.perceptrons.change_layer(index, [1.0] * node_length)
+            check &= ((node_length + 1, 1) == self.perceptrons.augmented_layers[index].shape)
+
+        assert check
+
+
     def test_initialize_weight_number(self):
         assert len(self.perceptrons.weights) == len(self.sample_nodes) - 1
 
