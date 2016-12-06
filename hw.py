@@ -160,6 +160,8 @@ class Perceptrons():
                 return self.layers[index].T
             else:
                 return self.layers[index]
+        elif isinstance(self.layers[index], list):
+            return np.mat(self.layers[index]).T
 
     def weight(self, index):
         return self.weights[index]

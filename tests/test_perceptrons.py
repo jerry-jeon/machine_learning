@@ -74,6 +74,10 @@ class TestPercentrons(TestCase):
         self.perceptrons.layers[0] = np.array([1.0, 2.0])
         assert (2, 1) == self.perceptrons.layer(0).shape
 
+    def test_layer_list_return_column_vector(self):
+        self.perceptrons.layers[0] = [1.0, 2.0]
+        assert (2, 1) == self.perceptrons.layer(0).shape
+
     def test_last_layer(self):
         assert self.perceptrons.last_layer() == self.perceptrons.layers[len(self.perceptrons.layers) - 1]
 
