@@ -152,11 +152,14 @@ class Perceptrons():
 
 #Consider remove these methods
     def layer(self, index):
-        row, col = self.layers[index].shape
-        if row == 1:
-            return self.layers[index].T
-        else:
-            return self.layers[index]
+        if isinstance(self.layers[index], np.ndarray):
+            return np.mat(self.layers[index]).T
+        elif isinstance(self.layers[index], np.matrix):
+            row, col = self.layers[index].shape
+            if row == 1:
+                return self.layers[index].T
+            else:
+                return self.layers[index]
 
     def weight(self, index):
         return self.weights[index]

@@ -62,12 +62,16 @@ class TestPercentrons(TestCase):
 
         assert check
 
-    def test_layer_row_vector_shape(self):
+    def test_layer_row_vector_matix_return_column_vector(self):
         self.perceptrons.layers[0] = np.mat([1.0, 2.0])
         assert (2, 1) == self.perceptrons.layer(0).shape
 
-    def test_layer_column_vector_shape(self):
+    def test_layer_column_vector_matrix_return_column_vector(self):
         self.perceptrons.layers[0] = np.mat([1.0, 2.0]).T
+        assert (2, 1) == self.perceptrons.layer(0).shape
+
+    def test_layer_ndarray_return_column_vector(self):
+        self.perceptrons.layers[0] = np.array([1.0, 2.0])
         assert (2, 1) == self.perceptrons.layer(0).shape
 
     def test_last_layer(self):
