@@ -152,7 +152,11 @@ class Perceptrons():
 
 #Consider remove these methods
     def layer(self, index):
-        return self.layers[index]
+        row, col = self.layers[index].shape
+        if row == 1:
+            return self.layers[index].T
+        else:
+            return self.layers[index]
 
     def weight(self, index):
         return self.weights[index]
@@ -234,7 +238,7 @@ class DeepLearningMachine(Machine):
 
     def learn_file(self, file):
         training_data = self.file_to_data(file)
-        perceptrons = Perceptrons([13, 1])
+        perceptrons = Perceptrons([10, 1])
         print(perceptrons.info())
         while self.converge():
             print("EPOCH : " + str(self.epoch))
