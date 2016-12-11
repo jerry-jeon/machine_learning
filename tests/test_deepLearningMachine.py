@@ -46,16 +46,13 @@ class TestDeepLearningMachine(TestCase):
         assert isinstance(self.machine.discriminant, FunctionType)
 
     def test_learn_file_bring_variety_to_weight(self):
-        check = False
         initial_weights = []
         for step in range(len(self.machine.perceptrons.weights)):
             initial_weights.append(np.copy(self.machine.perceptrons.weights[step]))
         with open(TEST_FILE) as file:
             self.machine.learn_file(file)
         for initial_weight in initial_weights:
-            check |= np.array_equal(initial_weight, self.machine.perceptrons.weights[step])
-
-        assert not check
+            assert not np.array_equal(initial_weight, self.machine.perceptrons.weights[step])
 
     def test_add_data(self):
         fake_data = [1.0] * 13
