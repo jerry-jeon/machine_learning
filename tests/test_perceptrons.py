@@ -53,7 +53,7 @@ class TestPercentrons(TestCase):
         check = True
 
         for i in range(len(self.sample_nodes) - 1):
-            check &= ((self.sample_nodes[i], self.sample_nodes[i+1]) == self.perceptrons.weight(i).shape)
+            check &= ((self.sample_nodes[i] + 1, self.sample_nodes[i+1]) == self.perceptrons.weight(i).shape)
 
         assert check
 

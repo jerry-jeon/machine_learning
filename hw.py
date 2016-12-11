@@ -145,7 +145,7 @@ class Perceptrons():
             self.layers.append(np.full((node_length, 1), 0.0))
 
         for i in range(len(nodes) - 1):
-            self.weights.append(self.beginning_weight(nodes[i], nodes[i + 1]))
+            self.weights.append(self.beginning_weight(nodes[i] + 1, nodes[i + 1]))
 
     def last_layer(self):
         return self.layers[len(self.layers) - 1]
