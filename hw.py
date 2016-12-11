@@ -207,7 +207,9 @@ class Perceptrons():
         return np.array(yop)
 
     def update_weight(self, step):
-        self.weights[step] += self.delta_matrix(step)
+        result = self.delta_matrix(step)
+        #print("?? :"  + str(result))
+        self.weights[step] += result
 
     def update_weight_all(self):
         for i in range(len(self.weights)):
@@ -250,13 +252,13 @@ class DeepLearningMachine(Machine):
             return 0
 
     def learn_file(self, file):
-        training_data = self.file_to_data(file)
-        print(self.perceptrons.info())
+        self.read_file(file)
+        #print(self.perceptrons.info())
         while self.converge():
             print("EPOCH : " + str(self.epoch))
-            for data in training_data:
+            for data in self.training_data:
                 self.perceptrons.back_propogation(data)
-        print(self.perceptrons.info())
+        #print(self.perceptrons.info())
 
         def g(data):
             self.perceptrons.layers[0] = np.array(data)
@@ -270,7 +272,6 @@ class DeepLearningMachine(Machine):
             'cls': cls,
             'data': np.array([float(i) for i in data]).reshape((13, 1)),
         }
-        print(data['data'].shape)
         self.training_data.append(data)
 
     def read_file(self, data_file):
