@@ -35,11 +35,6 @@ class TestDeepLearningMachine(TestCase):
         self.machine.discriminant = lambda data : 0.4
         assert self.machine.predict(self.fake_data) == 0
 
-    def test_predict_negative_discriminant_with_bigpositivethreshold_class1(self):
-        self.machine.discriminant = lambda data : 0
-
-        assert self.machine.predict(self.fake_data, 100) == 1
-
     def test_add_data(self):
         fake_data = [1.0] * 13
         fake_cls = 0
