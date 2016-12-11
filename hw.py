@@ -154,6 +154,9 @@ class Perceptrons():
     def layer(self, index):
         return self.layers[index]
 
+    def augmented_layer(self, index):
+        return np.append([1.0], self.layers[index])
+
     def weight(self, index):
         return self.weights[index]
 
@@ -270,8 +273,9 @@ class DeepLearningMachine(Machine):
             if self.is_valid(data_line):
                 data = {
                     'cls': int(data_line.pop()),
-                    'data': np.array([float(i) for i in data_line]).T,
+                    'data': np.array([float(i) for i in data_line]).T.reshape((13, 1)),
                 }
+                print(data['data'].shape)
                 training_data.append(data)
 
         return training_data
