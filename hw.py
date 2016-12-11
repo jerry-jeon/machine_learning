@@ -252,6 +252,18 @@ class DeepLearningMachine(Machine):
         else:
             return 0
 
+    def predict_data_lines(self, data_lines, threshold=0):
+        predictResult = PredictResult()
+        for event in data_lines:
+            data_line = event.split()
+            if self.is_valid(data_line):
+                data = self.raw_str_to_data(data_line)
+                actual_cls = data['cls']
+                predict = self.predict(data['data'])
+                predictResult.add_data(predict, actual_cls)
+
+        return predictResult
+
     def learn_file(self, file):
         self.read_file(file)
         #print(self.perceptrons.info())
@@ -262,18 +274,17 @@ class DeepLearningMachine(Machine):
         #print(self.perceptrons.info())
 
         def g(data):
-            self.perceptrons.layers[0] = np.array(data)
+            self.perceptrons.change_layer(0, data)
             self.perceptrons.calculate_all()
             return self.perceptrons.last_layer().item(0, 0)
 
         self.discriminant = g
 
-    def add_training_data(self, data, cls):
-        data = {
-            'cls': cls,
-            'data': np.array([float(i) for i in data]).reshape((13, 1)),
+    def raw_str_to_data(self, data_line):
+        return {
+            'cls': int(data_line.pop()),
+            'data': np.array([float(i) for i in data_line]).reshape((13, 1)),
         }
-        self.training_data.append(data)
 
     def read_file(self, data_file):
         data_lines = data_file.readlines()
@@ -281,8 +292,7 @@ class DeepLearningMachine(Machine):
         for event in data_lines:
             data_line = event.split()
             if self.is_valid(data_line):
-                cls = int(data_line.pop())
-                self.add_training_data(data_line, cls)
+                self.training_data.append(self.raw_str_to_data(data_line))
 
     def converge(self, delta = 0):
         self.epoch += 1

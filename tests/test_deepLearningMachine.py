@@ -54,14 +54,14 @@ class TestDeepLearningMachine(TestCase):
         for initial_weight in initial_weights:
             assert not np.array_equal(initial_weight, self.machine.perceptrons.weights[step])
 
-    def test_add_data(self):
-        fake_data = [1.0] * 13
-        fake_cls = 0
+    def test_raw_str_to_data(self):
+        fake_data = ["1.5"] * 13
+        fake_data.insert(0, "0")
 
-        self.machine.add_training_data(fake_data, fake_cls)
+        data = self.machine.raw_str_to_data(fake_data)
 
-        assert self.machine.training_data[0]['cls'] == 0
-        assert self.machine.training_data[0]['data'].shape == (13, 1)
+        assert data['cls'] == 0
+        assert data['data'].shape == (13, 1)
 
     def test_read_file(self):
         with open(TEST_FILE) as file:
