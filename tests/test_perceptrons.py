@@ -30,13 +30,19 @@ class TestPercentrons(TestCase):
 
         assert check
 
-    def test_change_layer_augmented_layer_length_same_as_node_length_plus_one(self):
+    def test_augmented_layer_length_same_as_node_length_plus_one(self):
         check = True
         for index, node_length in enumerate(self.sample_nodes):
-            self.perceptrons.layers[index] = np.array([1.0] * node_length)
-            print(self.perceptrons.layer(index).shape)
-            print(self.perceptrons.augmented_layer(index).shape)
+            self.perceptrons.layers[index] = np.array([1.0] * node_length).reshape((node_length, 1))
             check &= ((node_length + 1, 1) == self.perceptrons.augmented_layer(index).shape)
+
+        assert check
+
+    def test_augmented_layer_first_node_value_is_one(self):
+        check = True
+        for index, node_length in enumerate(self.sample_nodes):
+            self.perceptrons.layers[index] = np.array([3.0] * node_length).reshape((node_length, 1))
+            check &= (1.0 == self.perceptrons.augmented_layer(index)[0, 0])
 
         assert check
 

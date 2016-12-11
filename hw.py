@@ -155,7 +155,8 @@ class Perceptrons():
         return self.layers[index]
 
     def augmented_layer(self, index):
-        return np.append([1.0], self.layers[index])
+        augmented_shape = (self.layers[index].shape[0] + 1, 1)
+        return np.append([1.0], self.layers[index]).reshape(augmented_shape)
 
     def weight(self, index):
         return self.weights[index]
@@ -208,7 +209,6 @@ class Perceptrons():
 
     def update_weight(self, step):
         result = self.delta_matrix(step)
-        #print("?? :"  + str(result))
         self.weights[step] += result
 
     def update_weight_all(self):
@@ -244,7 +244,7 @@ class DeepLearningMachine(Machine):
 
     def predict(self, data):
         result = self.discriminant(data)
-        print(result)
+        print("Result : " + str(result))
 
         if result > 0.5:
             return 1
