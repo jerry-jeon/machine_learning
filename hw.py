@@ -237,6 +237,7 @@ class DeepLearningMachine(Machine):
         self.epoch = 0
         self.layers = []
         self.weights = []
+        self.training_data = []
 
     def predict(self, data, threshold=0):
         result = self.discriminant(data)
@@ -264,21 +265,22 @@ class DeepLearningMachine(Machine):
 
         self.discriminant = g
 
-    def file_to_data(self, data_file):
-        training_data = []
+    def add_training_data(self, data, cls):
+        data = {
+            'cls': cls,
+            'data': np.array([float(i) for i in data]).reshape((13, 1)),
+        }
+        print(data['data'].shape)
+        self.training_data.append(data)
+
+    def read_file(self, data_file):
         data_lines = data_file.readlines()
 
         for event in data_lines:
             data_line = event.split()
             if self.is_valid(data_line):
-                data = {
-                    'cls': int(data_line.pop()),
-                    'data': np.array([float(i) for i in data_line]).T.reshape((13, 1)),
-                }
-                print(data['data'].shape)
-                training_data.append(data)
-
-        return training_data
+                cls = int(data_line.pop())
+                self.add_training_data(data_line, cls)
 
     def converge(self, delta = 0):
         self.epoch += 1

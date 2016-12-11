@@ -14,6 +14,10 @@ class TestDeepLearningMachine(TestCase):
 
     def test_initialize(self):
         assert isinstance(self.machine, DeepLearningMachine)
+        assert self.machine.epoch == 0
+        assert self.machine.layers == []
+        assert self.machine.weights == []
+        assert self.machine.training_data == []
 
     def test_predict_positive_discriminant_class1(self):
         self.machine.discriminant = lambda data : 1
@@ -36,15 +40,24 @@ class TestDeepLearningMachine(TestCase):
 
         assert self.machine.predict(self.fake_data, 100) == 1
 
-    def test_fileToData(self):
+    def test_add_data(self):
+        fake_data = [1.0] * 13
+        fake_cls = 0
+
+        self.machine.add_training_data(fake_data, fake_cls)
+
+        assert self.machine.training_data[0]['cls'] == 0
+        assert self.machine.training_data[0]['data'].shape == (13, 1)
+
+    def test_read_file(self):
         with open(TEST_FILE) as file:
-            training_data = self.machine.file_to_data(file)
+            self.machine.read_file(file)
 
-        cls_positive = sum(x['cls'] == 1 for x in training_data)
-        cls_negative = sum(x['cls'] == 0 for x in training_data)
-        cls_invalid = sum(x['cls'] != 0 and x['cls'] != 1 for x in training_data)
+        cls_positive = sum(x['cls'] == 1 for x in self.machine.training_data)
+        cls_negative = sum(x['cls'] == 0 for x in self.machine.training_data)
+        cls_invalid = sum(x['cls'] != 0 and x['cls'] != 1 for x in self.machine.training_data)
 
-        assert len(training_data) == 4
+        assert len(self.machine.training_data) == 4
         assert cls_positive == 2
         assert cls_negative == 2
         assert cls_invalid == 0
