@@ -3,13 +3,15 @@ from functools import reduce
 import os
 
 from hw import DeepLearningMachine
+from hw import Perceptrons
 
 TEST_FILE = os.path.join(os.path.dirname(__file__), 'test_trn.txt')
 
 class TestDeepLearningMachine(TestCase):
 
     def setUp(self):
-        self.machine = DeepLearningMachine()
+        fake_perceptrons = Perceptrons([13, 2, 2, 1])
+        self.machine = DeepLearningMachine(fake_perceptrons)
         self.fake_data = [1] * 14
 
     def test_initialize(self):
@@ -18,6 +20,7 @@ class TestDeepLearningMachine(TestCase):
         assert self.machine.layers == []
         assert self.machine.weights == []
         assert self.machine.training_data == []
+        assert isinstance(self.machine.perceptrons, Perceptrons)
 
     def test_predict_positive_discriminant_class1(self):
         self.machine.discriminant = lambda data : 1

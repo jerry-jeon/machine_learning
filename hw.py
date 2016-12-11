@@ -233,11 +233,12 @@ class Perceptrons():
 
 class DeepLearningMachine(Machine):
 
-    def __init__(self):
+    def __init__(self, perceptrons):
         self.epoch = 0
         self.layers = []
         self.weights = []
         self.training_data = []
+        self.perceptrons = perceptrons
 
     def predict(self, data):
         result = self.discriminant(data)
@@ -250,18 +251,17 @@ class DeepLearningMachine(Machine):
 
     def learn_file(self, file):
         training_data = self.file_to_data(file)
-        perceptrons = Perceptrons([13, 2, 2, 1])
-        print(perceptrons.info())
+        print(self.perceptrons.info())
         while self.converge():
             print("EPOCH : " + str(self.epoch))
             for data in training_data:
-                perceptrons.back_propogation(data)
-        print(perceptrons.info())
+                self.perceptrons.back_propogation(data)
+        print(self.perceptrons.info())
 
         def g(data):
-            perceptrons.layers[0] = np.array(data)
-            perceptrons.calculate_all()
-            return perceptrons.last_layer().item(0, 0)
+            self.perceptrons.layers[0] = np.array(data)
+            self.perceptrons.calculate_all()
+            return self.perceptrons.last_layer().item(0, 0)
 
         self.discriminant = g
 
