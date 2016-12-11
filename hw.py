@@ -150,10 +150,6 @@ class Perceptrons():
     def last_layer(self):
         return self.layers[len(self.layers) - 1]
 
-#Consider remove these methods
-    def layer(self, index):
-        return self.layers[index]
-
     def augmented_layer(self, index):
         augmented_shape = (self.layers[index].shape[0] + 1, 1)
         return np.append([1.0], self.layers[index]).reshape(augmented_shape)
@@ -166,8 +162,13 @@ class Perceptrons():
 
     def calculate(self, step):
         results = []
-        for cls in range(len(self.layer(step + 1))):
-            results.append(sigmoid(self.weight(step)[:, [cls]], self.layer(step)))
+        for cls in range(len(self.layers[step + 1])):
+            print(cls)
+            print("1 : " + str(self.weight(step).shape))
+            print("2 : " + str(self.weight(step)[:, [cls]]))
+            print("3 : " + str(self.weight(step)[:, [cls]].shape))
+            print("4 : " + str(self.augmented_layer(step).shape))
+            results.append(sigmoid(self.weight(step)[:, [cls]], self.augmented_layer(step)))
             # TODO refactoring
         return np.array([results]).T
 
@@ -180,7 +181,7 @@ class Perceptrons():
             return lambda output_node: self.actual_class - self.last_layer()[0][0]
         else:
             above_err = self.err(weight_index + 1)
-            above_layer = self.layer(weight_index + 1)
+            above_layer = self.augmented_layer(weight_index + 1)
 
             #err_sum = reduce(lambda x, y: x + above_err(i) * y, above_layer, 0)
             err_sum = 0.0
@@ -188,10 +189,10 @@ class Perceptrons():
                 #TODO should refactoring append [0] behind column vector
                 err_sum += (above_err(i) * above_layer[i][0])
 #make code looks good
-            return lambda output_node: err_sum * (self.layer(weight_index + 1)[output_node] @ (1 - self.layer(weight_index + 1)[output_node]))
+            return lambda output_node: err_sum * (self.augmented_layer(weight_index + 1)[output_node] @ (1 - self.augmented_layer(weight_index + 1)[output_node]))
 
     def delta(self, step, above_node_index, below_node_index):
-        result = self.learning_rate * self.err(step)(above_node_index) * self.layer(step)[below_node_index]
+        result = self.learning_rate * self.err(step)(above_node_index) * self.augmented_layer(step)[below_node_index]
         if isinstance(result, float):
             return result
         else:
@@ -199,9 +200,9 @@ class Perceptrons():
 
     def delta_matrix(self, step):
         yop = []
-        for below_node_index in range(len(self.layer(step))):
+        for below_node_index in range(len(self.augmented_layer(step))):
             results = []
-            for above_node_index in range(len(self.layer(step + 1))):
+            for above_node_index in range(len(self.layers[step + 1])):
                 results.append(self.delta(step, above_node_index, below_node_index))
             yop.append(results)
 

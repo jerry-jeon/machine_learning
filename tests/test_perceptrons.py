@@ -25,7 +25,7 @@ class TestPercentrons(TestCase):
 
     def test_initialize_layer_shape(self):
         for index, node_length in enumerate(self.sample_nodes):
-            assert ((node_length, 1) == self.perceptrons.layer(index).shape)
+            assert ((node_length, 1) == self.perceptrons.layers[index].shape)
 
     def test_augmented_layer_length_same_as_node_length_plus_one(self):
         for index, node_length in enumerate(self.sample_nodes):
@@ -57,7 +57,7 @@ class TestPercentrons(TestCase):
 
     def test_calculate_check_shape(self):
         for i in range(len(self.sample_nodes) - 1):
-            assert (len(self.perceptrons.augmented_layer(i + 1)), 1) == self.perceptrons.calculate(step=i).shape
+            assert (len(self.perceptrons.layers[i + 1]), 1) == self.perceptrons.calculate(step=i).shape
 
     def test_calculate_all(self):
         self.perceptrons.calculate_all()
