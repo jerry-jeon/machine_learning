@@ -138,11 +138,12 @@ class Perceptrons():
 
     def __init__(self, nodes):
         self.learning_rate = 0.001
-        self.layers = []
+        self.layers = [None] * len(nodes)
         self.weights = []
+        self.augmented_layers = [None] * len(nodes)
 
-        for node_length in nodes:
-            self.layers.append(np.full((node_length, 1), 0.0))
+        for index, node_length in enumerate(nodes):
+            self.change_layer(index, np.full((node_length, 1), 0.0))
 
         for i in range(len(nodes) - 1):
             self.weights.append(self.beginning_weight(nodes[i] + 1, nodes[i + 1]))
@@ -151,8 +152,12 @@ class Perceptrons():
         return self.layers[len(self.layers) - 1]
 
     def augmented_layer(self, index):
+        return self.augmented_layers[index]
+
+    def change_layer(self, index, layer):
+        self.layers[index] = layer
         augmented_shape = (self.layers[index].shape[0] + 1, 1)
-        return np.append([1.0], self.layers[index]).reshape(augmented_shape)
+        self.augmented_layers[index] = np.append([1.0], self.layers[index]).reshape(augmented_shape)
 
     def weight(self, index):
         return self.weights[index]
@@ -163,18 +168,13 @@ class Perceptrons():
     def calculate(self, step):
         results = []
         for cls in range(len(self.layers[step + 1])):
-            print(cls)
-            print("1 : " + str(self.weight(step).shape))
-            print("2 : " + str(self.weight(step)[:, [cls]]))
-            print("3 : " + str(self.weight(step)[:, [cls]].shape))
-            print("4 : " + str(self.augmented_layer(step).shape))
             results.append(sigmoid(self.weight(step)[:, [cls]], self.augmented_layer(step)))
             # TODO refactoring
         return np.array([results]).T
 
     def calculate_all(self):
         for step in range(len(self.weights)):
-            self.layers[step + 1] = self.calculate(step)
+            self.change_layer(step + 1,  self.calculate(step))
 
     def err(self, weight_index):
         if weight_index == len(self.weights) - 1:
@@ -217,7 +217,7 @@ class Perceptrons():
             self.update_weight(i)
 
     def back_propogation(self, data):
-        self.layers[0] = data['data']
+        self.change_layer(0, data['data'])
         self.actual_class = data['cls']
         self.calculate_all()
         self.update_weight_all()
@@ -351,7 +351,7 @@ class PredictResult:
 
 
 if __name__ == "__main__":
-    machine = DeepLearningMachine()
+    machine = DeepLearningMachine(Perceptrons([13, 2, 2, 1]))
     with open('data/trn.txt') as file:
         machine.learn_file(file)
 

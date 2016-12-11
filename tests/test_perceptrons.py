@@ -29,12 +29,12 @@ class TestPercentrons(TestCase):
 
     def test_augmented_layer_length_same_as_node_length_plus_one(self):
         for index, node_length in enumerate(self.sample_nodes):
-            self.perceptrons.layers[index] = np.array([1.0] * node_length).reshape((node_length, 1))
+            self.perceptrons.change_layer(index, np.array([1.0] * node_length).reshape((node_length, 1)))
             assert ((node_length + 1, 1) == self.perceptrons.augmented_layer(index).shape)
 
     def test_augmented_layer_first_node_value_is_one(self):
         for index, node_length in enumerate(self.sample_nodes):
-            self.perceptrons.layers[index] = np.array([3.0] * node_length).reshape((node_length, 1))
+            self.perceptrons.change_layer(index, np.array([3.0] * node_length).reshape((node_length, 1)))
             assert (1.0 == self.perceptrons.augmented_layer(index)[0, 0])
 
     def test_initialize_weight_number(self):
