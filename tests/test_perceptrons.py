@@ -16,7 +16,7 @@ class TestPercentrons(TestCase):
         self.perceptrons = Perceptrons(self.sample_nodes)
 
     def test_sigmoid_range_0_to_1(self):
-        fake_data = np.mat([5.332, 1.233, 8.66]).T
+        fake_data = np.array([[5.332, 1.233, 8.66]]).T
         fake_weight = self.perceptrons.beginning_weight(3, 1)
         assert 0 < sigmoid(fake_weight, fake_data) < 1
 
@@ -37,7 +37,6 @@ class TestPercentrons(TestCase):
             check &= ((node_length + 1, 1) == self.perceptrons.augmented_layers[index].shape)
 
         assert check
-
 
     def test_initialize_weight_number(self):
         assert len(self.perceptrons.weights) == len(self.sample_nodes) - 1
@@ -62,22 +61,6 @@ class TestPercentrons(TestCase):
 
         assert check
 
-    def test_layer_row_vector_matix_return_column_vector(self):
-        self.perceptrons.layers[0] = np.mat([1.0, 2.0])
-        assert (2, 1) == self.perceptrons.layer(0).shape
-
-    def test_layer_column_vector_matrix_return_column_vector(self):
-        self.perceptrons.layers[0] = np.mat([1.0, 2.0]).T
-        assert (2, 1) == self.perceptrons.layer(0).shape
-
-    def test_layer_ndarray_return_column_vector(self):
-        self.perceptrons.layers[0] = np.array([1.0, 2.0])
-        assert (2, 1) == self.perceptrons.layer(0).shape
-
-    def test_layer_list_return_column_vector(self):
-        self.perceptrons.layers[0] = [1.0, 2.0]
-        assert (2, 1) == self.perceptrons.layer(0).shape
-
     def test_last_layer(self):
         assert self.perceptrons.last_layer() == self.perceptrons.layers[len(self.perceptrons.layers) - 1]
 
@@ -101,19 +84,25 @@ class TestPercentrons(TestCase):
         assert check
 
     def test_err_shape(self):
+        #remove dependency with calculate_all
+        self.perceptrons.actual_class = 0
         self.perceptrons.calculate_all()
 
         check = True
         for i in range(len(self.perceptrons.weights)):
             for output_node in self.perceptrons.layer(i):
-                assert isinstance(self.perceptrons.err(i, 0)(output_node.item(0, 0)), float)
+                #TODO refactor output_node[0]
+                assert isinstance(self.perceptrons.err(i)(output_node[0]), float)
 
         assert check
 
     def test_delta_shape(self):
+        self.perceptrons.actual_class = 0
         check = True
         for step in range(len(self.perceptrons.weights)):
-            check &= (self.perceptrons.weight(step).shape == self.perceptrons.delta(step, 0).shape)
+            weight_shape = self.perceptrons.weight(step).shape
+            delta_shape = self.perceptrons.delta_matrix(step).shape
+            check &= (weight_shape == delta_shape)
 
         assert check
 

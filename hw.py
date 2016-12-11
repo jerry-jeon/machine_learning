@@ -131,7 +131,7 @@ class BayesMachine(Machine):
 
 
 def sigmoid(weight, values):
-    return 1.0 / (1 + exp(-(weight.T * values)))
+    return 1.0 / (1 + exp(-(weight.T @ values)))
 
 
 class Perceptrons():
@@ -142,7 +142,7 @@ class Perceptrons():
         self.weights = []
 
         for node_length in nodes:
-            self.layers.append(np.mat(np.full((node_length, 1), 0.0)))
+            self.layers.append(np.full((node_length, 1), 0.0))
 
         for i in range(len(nodes) - 1):
             self.weights.append(self.beginning_weight(nodes[i], nodes[i + 1]))
@@ -152,66 +152,69 @@ class Perceptrons():
 
 #Consider remove these methods
     def layer(self, index):
-        if isinstance(self.layers[index], np.ndarray):
-            return np.mat(self.layers[index]).T
-        elif isinstance(self.layers[index], np.matrix):
-            row, col = self.layers[index].shape
-            if row == 1:
-                return self.layers[index].T
-            else:
-                return self.layers[index]
-        elif isinstance(self.layers[index], list):
-            return np.mat(self.layers[index]).T
+        return self.layers[index]
 
     def weight(self, index):
         return self.weights[index]
 
     def beginning_weight(self, row, col):
-        return np.mat(np.random.uniform(-0.01, 0.01, (row, col)))
+        return np.random.uniform(-0.01, 0.01, (row, col))
 
     def calculate(self, step):
         results = []
         for cls in range(len(self.layer(step + 1))):
-            results.append(sigmoid(self.weight(step)[:, cls], self.layer(step)))
-        return np.mat(results).T
+            results.append(sigmoid(self.weight(step)[:, [cls]], self.layer(step)))
+            # TODO refactoring
+        return np.array([results]).T
 
     def calculate_all(self):
         for step in range(len(self.weights)):
             self.layers[step + 1] = self.calculate(step)
 
-    def err(self, weight_index, real_class):
+    def err(self, weight_index):
         if weight_index == len(self.weights) - 1:
-            return lambda output_node: real_class - self.last_layer().item(0, 0)
+            return lambda output_node: self.actual_class - self.last_layer()[0][0]
         else:
-            above_err = self.err(weight_index + 1, real_class)
+            above_err = self.err(weight_index + 1)
             above_layer = self.layer(weight_index + 1)
 
             #err_sum = reduce(lambda x, y: x + above_err(i) * y, above_layer, 0)
             err_sum = 0.0
             for i in range(len(above_layer)):
-                err_sum += (above_err(i) * above_layer[i]).item(0, 0)
+                #TODO should refactoring append [0] behind column vector
+                err_sum += (above_err(i) * above_layer[i][0])
+#make code looks good
+            return lambda output_node: err_sum * (self.layer(weight_index + 1)[output_node] @ (1 - self.layer(weight_index + 1)[output_node]))
 
-            return lambda output_node: err_sum * self.layer(weight_index + 1)[output_node].item(0, 0) * (1 - self.layer(weight_index + 1)[output_node].item(0, 0))
+    def delta(self, step, above_node_index, below_node_index):
+        result = self.learning_rate * self.err(step)(above_node_index) * self.layer(step)[below_node_index]
+        if isinstance(result, float):
+            return result
+        else:
+            return result[0]
 
-    def delta(self, step, real_class):
-        results = []
-        for node in range(len(self.layer(step + 1))):
-            results.append(self.learning_rate * self.err(step, real_class)(node) * self.layer(step))
+    def delta_matrix(self, step):
+        yop = []
+        for below_node_index in range(len(self.layer(step))):
+            results = []
+            for above_node_index in range(len(self.layer(step + 1))):
+                results.append(self.delta(step, above_node_index, below_node_index))
+            yop.append(results)
 
-        return np.mat(np.array(results)).T
+        return np.array(yop)
 
-    def update_weight(self, step, real_class):
-        self.weights[step] += self.delta(step, real_class)
+    def update_weight(self, step):
+        self.weights[step] += self.delta_matrix(step)
 
-    def update_weight_all(self, real_class):
+    def update_weight_all(self):
         for i in range(len(self.weights)):
-            self.update_weight(i, real_class)
+            self.update_weight(i)
 
     def back_propogation(self, data):
-        real_class = data['cls']
-        self.layers[0] = np.mat(data['data']).T
+        self.layers[0] = data['data']
+        self.actual_class = data['cls']
         self.calculate_all()
-        self.update_weight_all(real_class)
+        self.update_weight_all()
 
     def info(self):
         information = ""
@@ -243,7 +246,7 @@ class DeepLearningMachine(Machine):
 
     def learn_file(self, file):
         training_data = self.file_to_data(file)
-        perceptrons = Perceptrons([10, 1])
+        perceptrons = Perceptrons([13, 2, 2, 1])
         print(perceptrons.info())
         while self.converge():
             print("EPOCH : " + str(self.epoch))
@@ -252,7 +255,7 @@ class DeepLearningMachine(Machine):
         print(perceptrons.info())
 
         def g(data):
-            perceptrons.layers[0] = np.mat(np.array(data)).T
+            perceptrons.layers[0] = np.array(data)
             perceptrons.calculate_all()
             return perceptrons.last_layer().item(0, 0)
 
@@ -267,7 +270,7 @@ class DeepLearningMachine(Machine):
             if self.is_valid(data_line):
                 data = {
                     'cls': int(data_line.pop()),
-                    'data': np.array([float(i) for i in data_line]),
+                    'data': np.array([float(i) for i in data_line]).T,
                 }
                 training_data.append(data)
 
