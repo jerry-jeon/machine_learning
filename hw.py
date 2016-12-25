@@ -243,11 +243,10 @@ class DeepLearningMachine(Machine):
         self.training_data = []
         self.perceptrons = perceptrons
 
-    def predict(self, data):
+    def predict(self, data, threshold=0):
         result = self.discriminant(data)
-        print("Result : " + str(result))
 
-        if result > 0.5:
+        if result + threshold > 0.5:
             return 1
         else:
             return 0
@@ -259,7 +258,7 @@ class DeepLearningMachine(Machine):
             if self.is_valid(data_line):
                 data = self.raw_str_to_data(data_line)
                 actual_cls = data['cls']
-                predict = self.predict(data['data'])
+                predict = self.predict(data['data'], threshold)
                 predictResult.add_data(predict, actual_cls)
 
         return predictResult
@@ -367,4 +366,4 @@ if __name__ == "__main__":
 
     test_datas = []
     with open('data/tst.txt') as file:
-        machine.predict_file(file, False)
+        machine.predict_file(file, True)
